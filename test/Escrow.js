@@ -18,6 +18,12 @@ describe("Escrow Smart Contract", () => {
     realEstate = await RealEstate.deploy();
 
     // Minting of Properties -
+    let transaction = await realEstate
+      .connect(seller)
+      // Function from RealEstate.sol
+      .mintProprtyItems(
+        "https://ipfs.io/ipfs/QmTudSYeM7mz3PkYEWXWqPjomRPHogcMFSq7XAvsvsgAPS"
+      );
 
     // Deployed Escrow Contract -
     const Escrow = await ethers.getContractFactory("Escrow");
@@ -27,6 +33,17 @@ describe("Escrow Smart Contract", () => {
       inspector.address,
       lender.address
     );
+
+    //Approve the property -
+    transaction = await realEstate.connect(seller).approve(escrow.address, 1);
+    await transaction.wait();
+
+    // List the property -
+    transaction = await escrow
+      .connect(seller)
+      // Function from Escrow.sol
+      .listProperties(1, buyer.address, tokens(10), tokens(5));
+    await transaction.wait();
   });
 
   describe("Deployment", () => {
@@ -48,6 +65,32 @@ describe("Escrow Smart Contract", () => {
     it("Returns Lender", async () => {
       const lenderResult = await escrow.lender();
       expect(lenderResult).to.be.equal(lender.address);
+    });
+  });
+
+  describe("Listing of Property", () => {
+    it("Update the Listing", async () => {
+      const result = await escrow.isListed(1); // Function of Escrow.sol {isListed}
+      expect(result).to.be.equal(true);
+    });
+
+    it("Returns the Buyer", async () => {
+      const result = await escrow.buyer(1); // Mapping var of Escrow.sol {buyer}
+      expect(result).to.be.equal(buyer.address);
+    });
+
+    it("Returns the Purchase Price", async () => {
+      const result = await escrow.purchasePrice(1); // Mapping var of Escrow.sol {purchasePrice}
+      expect(result).to.be.equal(tokens(10));
+    });
+
+    it("Returns the Escrow Amount", async () => {
+      const result = await escrow.escrowAmount(1); // Mapping var of Escrow.sol {escrowAmount}
+      expect(result).to.be.equal(tokens(5));
+    });
+
+    it("Update the Ownership", async () => {
+      expect(await realEstate.ownerOf(1)).to.be.equal(escrow.address);
     });
   });
 });
