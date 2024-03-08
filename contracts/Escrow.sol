@@ -83,4 +83,7 @@ contract Escrow {
     function getBalance() public view returns(uint256) {
         return address(this).balance;
     }
+
+    // RESUME FROM 3 hrs -
+    // function finalizeSale(uint _nftID) public {}
 }
