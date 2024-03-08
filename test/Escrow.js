@@ -93,4 +93,15 @@ describe("Escrow Smart Contract", () => {
       expect(await realEstate.ownerOf(1)).to.be.equal(escrow.address);
     });
   });
+
+  describe("Deposits Funds", () => {
+    it("Update the Contract Balance", async () => {
+      const transaction = await escrow
+        .connect(buyer)
+        .depositEarnest(1, { value: tokens(5) });
+      await transaction.wait();
+      const result = await escrow.getBalance();
+      expect(result).to.be.equal(tokens(5));
+    });
+  });
 });

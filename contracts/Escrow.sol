@@ -21,6 +21,11 @@ contract Escrow {
         _;
     }
 
+    modifier onlyBuyer(uint _nftID){
+        require(msg.sender == buyer[_nftID], "Only buyer can call this method");
+        _;
+    }
+
     // [LEDT SIDE PART] uint == id of prop in RealEstate
     mapping(uint256 => bool) public isListed;
     mapping(uint256 => uint256) public purchasePrice;
@@ -47,5 +52,18 @@ contract Escrow {
         purchasePrice[_nftID] = _purchasePrice;
         escrowAmount[_nftID] = _escrowAmount;
         buyer[_nftID] = _buyer;
+    }
+
+    // Put under Contract --> RealEstate.sol
+    function depositEarnest(uint256 _nftID) public payable onlyBuyer(_nftID){
+        // EscrowAmount is the money have to put in for the transaction of the property -
+        require(msg.value >= escrowAmount[_nftID], "Insufficient funds");
+    }
+
+    receive() external payable {}
+
+    // Get balance -
+    function getBalance() public view returns(uint256) {
+        return address(this).balance;
     }
 }
